@@ -69,7 +69,7 @@ fn main() {
             .join(format!(
                 "{}-{}",
                 TRIPLET.os.as_onnx_str(),
-                TRIPLET.arch.as_onnx_str()
+                TRIPLET.arch.as_onnx_directml_str()
             ))
             .join("native"),
     );
@@ -255,6 +255,17 @@ impl OnnxPrebuiltArchive for Architecture {
         match self {
             Architecture::X86 => Cow::from("x86"),
             Architecture::X86_64 => Cow::from("x86_64"),
+            Architecture::Arm => Cow::from("arm"),
+            Architecture::Arm64 => Cow::from("aarch64"),
+        }
+    }
+}
+
+impl Architecture {
+    fn as_onnx_directml_str(&self) -> Cow<str> {
+        match self {
+            Architecture::X86 => Cow::from("x86"),
+            Architecture::X86_64 => Cow::from("x64"),
             Architecture::Arm => Cow::from("arm"),
             Architecture::Arm64 => Cow::from("aarch64"),
         }
