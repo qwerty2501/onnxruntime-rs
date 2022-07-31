@@ -38,6 +38,8 @@ tracing-subscriber = "0.2"
 ureq = "2.1"
 
 [features]
+directml = ["onnxruntime-sys/directml"]
+
 # Fetch model from ONNX Model Zoo (https://github.com/onnx/models)
 model-fetching = ["ureq"]
 # Disable build script; used for https://docs.rs
