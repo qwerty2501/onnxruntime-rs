@@ -46,6 +46,11 @@ static TRIPLET: once_cell::sync::Lazy<Triplet> = once_cell::sync::Lazy::new(|| T
     accelerator: env::var(ORT_ENV_GPU).unwrap_or_default().parse().unwrap(),
 });
 
+static ONNXRUNTIME_DIR_NAME: once_cell::sync::Lazy<String> =
+    once_cell::sync::Lazy::new(
+        || format!("onnxruntime-{}-{}", TRIPLET.as_onnx_str(), ORT_VERSION,),
+    );
+
 #[cfg(feature = "disable-sys-build-script")]
 fn main() {
     println!("Build script disabled!");
@@ -62,17 +67,27 @@ fn main() {
     );
 
     #[cfg(feature = "directml")]
-    let (include_dir, lib_dir) = (
-        libort_install_dir.join("build/native/include"),
-        libort_install_dir
+    let (include_dir, lib_dir) = {
+        let include_dir = libort_install_dir.join("build/native/include");
+        let runtimes_dir = libort_install_dir
             .join("runtimes")
             .join(format!(
                 "{}-{}",
                 TRIPLET.os.as_onnx_str(),
                 TRIPLET.arch.as_onnx_directml_str()
             ))
-            .join("native"),
-    );
+            .join("native");
+
+        let export_libort_dir = libort_install_dir.join(&*ONNXRUNTIME_DIR_NAME);
+        let export_include_dir = export_libort_dir.join("include");
+        let export_lib_dir = export_libort_dir.join("lib");
+        fs::create_dir_all(&export_include_dir).unwrap();
+        copy_all_files(include_dir, &export_include_dir);
+
+        fs::create_dir_all(&export_lib_dir).unwrap();
+        copy_all_files(runtimes_dir, &export_lib_dir);
+        (export_include_dir, export_lib_dir)
+    };
 
     println!("Include directory: {:?}", include_dir);
     println!("Lib directory: {:?}", lib_dir);
@@ -102,6 +117,20 @@ fn generate_bindings(_include_dir: &Path) {
     //         ORT_VERSION
     //     );
     // }
+}
+
+fn copy_all_files(from: impl AsRef<Path>, to: impl AsRef<Path>) {
+    let from = from.as_ref();
+    let to = to.as_ref();
+    for entry in fs::read_dir(from).unwrap().filter_map(|e| e.ok()) {
+        let path = entry.path();
+        if !path.is_dir() {
+            if let Some(file_name) = path.file_name() {
+                let dest_path = to.join(file_name);
+                fs::copy(path, dest_path).unwrap();
+            }
+        }
+    }
 }
 
 #[cfg(feature = "generate-bindings")]
@@ -393,9 +422,8 @@ impl OnnxPrebuiltArchive for Triplet {
 fn prebuilt_archive_url() -> (PathBuf, String) {
     #[cfg(not(feature = "directml"))]
     let prebuilt_archive = format!(
-        "onnxruntime-{}-{}.{}",
-        TRIPLET.as_onnx_str(),
-        ORT_VERSION,
+        "{}.{}",
+        &*ONNXRUNTIME_DIR_NAME,
         TRIPLET.os.archive_extension()
     );
 
