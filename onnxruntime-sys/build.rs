@@ -267,7 +267,7 @@ impl Architecture {
             Architecture::X86 => Cow::from("x86"),
             Architecture::X86_64 => Cow::from("x64"),
             Architecture::Arm => Cow::from("arm"),
-            Architecture::Arm64 => Cow::from("aarch64"),
+            Architecture::Arm64 => Cow::from("arm64"),
         }
     }
 }
