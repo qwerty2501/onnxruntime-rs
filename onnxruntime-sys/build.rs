@@ -92,8 +92,13 @@ fn main() {
     println!("Include directory: {:?}", include_dir);
     println!("Lib directory: {:?}", lib_dir);
 
+    let onnxruntime_dll_path = lib_dir.join("onnxruntime.dll");
+    fs::rename(onnxruntime_dll_path, lib_dir.join("rsonnxruntime.dll")).unwrap();
+    let onnxruntime_lib_path = lib_dir.join("onnxruntime.lib");
+    fs::rename(onnxruntime_lib_path, lib_dir.join("rsonnxruntime.lib")).unwrap();
+
     // Tell cargo to tell rustc to link onnxruntime shared library.
-    println!("cargo:rustc-link-lib=onnxruntime");
+    println!("cargo:rustc-link-lib=rsonnxruntime");
     println!("cargo:rustc-link-search=native={}", lib_dir.display());
 
     println!("cargo:rerun-if-env-changed={}", ORT_ENV_STRATEGY);
