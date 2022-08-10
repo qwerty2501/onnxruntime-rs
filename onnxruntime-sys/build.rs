@@ -469,7 +469,20 @@ fn prepare_libort_dir_prebuilt() -> PathBuf {
     let (prebuilt_archive, prebuilt_url) = prebuilt_archive_url();
 
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
-    let extract_dir = out_dir.join(&format!("{}_{}", ORT_PREBUILT_EXTRACT_DIR, ORT_VERSION));
+    let extract_dir = out_dir.join(&format!(
+        "{}_{}_{}",
+        ORT_PREBUILT_EXTRACT_DIR,
+        ORT_VERSION,
+        if matches!(TRIPLET.accelerator, Accelerator::Gpu) {
+            "gpu"
+        } else {
+            #[cfg(not(feature = "directml"))]
+            let accelerator = "cpu";
+            #[cfg(feature = "directml")]
+            let accelerator = "directml";
+            accelerator
+        }
+    ));
     let downloaded_file = out_dir.join(&prebuilt_archive);
 
     println!("cargo:rerun-if-changed={}", downloaded_file.display());
