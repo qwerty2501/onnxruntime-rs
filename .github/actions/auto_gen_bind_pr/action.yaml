@@ -27,8 +27,8 @@ runs:
     - name: check
       run: git status -s | grep -E "M|A"
       shell: bash
+      continue-on-error: true
     - name: create_pr
-      if: success()
       id: cpr
       uses: peter-evans/create-pull-request@v4
       with:
