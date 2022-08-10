@@ -171,8 +171,13 @@ fn generate_bindings(include_dir: &Path) {
         ),
     ];
 
+    #[cfg(not(feature = "directml"))]
+    let header_name = "wrapper.h";
+    #[cfg(feature = "directml")]
+    let header_name = "wrapper_directml.h";
+
     // Tell cargo to invalidate the built crate whenever the wrapper changes
-    println!("cargo:rerun-if-changed=wrapper.h");
+    println!("cargo:rerun-if-changed={}", header_name);
     println!("cargo:rerun-if-changed=src/generated/bindings.rs");
 
     // The bindgen::Builder is the main entry point
@@ -181,7 +186,7 @@ fn generate_bindings(include_dir: &Path) {
     let bindings = bindgen::Builder::default()
         // The input header we would like to generate
         // bindings for.
-        .header("wrapper.h")
+        .header(header_name)
         // The current working directory is 'onnxruntime-sys'
         .clang_args(clang_args)
         // Tell cargo to invalidate the built crate whenever any of the
@@ -202,8 +207,11 @@ fn generate_bindings(include_dir: &Path) {
         .join("src")
         .join("generated")
         .join(env::var("CARGO_CFG_TARGET_OS").unwrap())
-        .join(env::var("CARGO_CFG_TARGET_ARCH").unwrap())
-        .join("bindings.rs");
+        .join(env::var("CARGO_CFG_TARGET_ARCH").unwrap());
+    #[cfg(not(feature = "directml"))]
+    let generated_file = generated_file.join("bindings.rs");
+    #[cfg(feature = "directml")]
+    let generated_file = generated_file.join("bindings_directml.rs");
     println!("cargo:rerun-if-changed={:?}", generated_file);
     bindings
         .write_to_file(&generated_file)
