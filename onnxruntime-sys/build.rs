@@ -183,7 +183,7 @@ fn generate_bindings(include_dir: &Path) {
     // The bindgen::Builder is the main entry point
     // to bindgen, and lets you build up options for
     // the resulting bindings.
-    let bindings = bindgen::Builder::default()
+    let mut bind_builder = bindgen::Builder::default()
         // The input header we would like to generate
         // bindings for.
         .header(header_name)
@@ -196,10 +196,16 @@ fn generate_bindings(include_dir: &Path) {
         .size_t_is_usize(true)
         // Format using rustfmt
         .rustfmt_bindings(true)
-        .rustified_enum("*")
-        // Finish the builder and generate the bindings.
+        .rustified_enum("*");
+
+    for entry in include_dir.read_dir().unwrap().filter_map(|e| e.ok()) {
+        let path = entry.path();
+        let file_name = path.file_name().unwrap().to_str().unwrap().to_string();
+        bind_builder =
+            bind_builder.allowlist_file(format!(".*{}", file_name.replace(".h", "\\.h")));
+    }
+    let bindings = bind_builder
         .generate()
-        // Unwrap the Result and panic on failure.
         .expect("Unable to generate bindings");
 
     // Write the bindings to (source controlled) src/generated/<os>/<arch>/bindings.rs
