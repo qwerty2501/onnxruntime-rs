@@ -25,7 +25,7 @@ runs:
         # cargoのキャシュが原因でテストが失敗してることが考えられる場合はバージョン部分を変更する
         key: "v1-cargo-test-cache-${{ inputs.triple }}"
     - name: gen bind
-      run: cargo build -p onnxruntime-sys --target ${{ inputs.triple }} --features generate-bindings,${{ inputs.additional_features }}
+      run: cargo build -p onnxruntime-sys --target ${{ inputs.triple }} --features generate-bindings,${{ inputs.additional_features }} && git add --all
       shell: bash
     - name: check
       run: git status -s | grep -E "M|A"
