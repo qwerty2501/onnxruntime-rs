@@ -30,6 +30,7 @@ runs:
       continue-on-error: true
     - name: create_pr
       id: cpr
+      if: success()
       uses: peter-evans/create-pull-request@v4
       with:
         commit-message: Automated generate bindings for ${{ inputs.triple }}
