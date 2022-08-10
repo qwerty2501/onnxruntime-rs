@@ -37,8 +37,8 @@ runs:
       uses: peter-evans/create-pull-request@v4
       with:
         commit-message: Automated generate bindings for ${{ inputs.triple }}
-        branch: ${{ steps.extract_branch.outputs.branch }}_auto_gen_bindings_${{ inputs.triple }}
+        branch: ${{ steps.extract_branch.outputs.branch }}_auto_gen_bindings_${{ inputs.triple }}_${{ inputs.additional_features }}
         delete-branch: true
-        title: Automated generate bindings for ${{ inputs.triple }}
+        title: Automated generate bindings for ${{ inputs.triple }} ${{ inputs.additional_features }}
         body: |
-          Automated generate bindings for ${{ inputs.triple }}
+          Automated generate bindings for ${{ inputs.triple }} ${{ inputs.additional_features }}
