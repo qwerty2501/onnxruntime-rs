@@ -92,7 +92,17 @@ fn main() {
         (export_include_dir, export_lib_dir)
     };
     if let Ok(ort_lib_out_dir) = env::var(ORT_ENV_OUT_DIR) {
-        output_onnxruntime_library(&lib_dir, ort_lib_out_dir);
+        output_onnxruntime_library(&lib_dir, &ort_lib_out_dir);
+        for entry in lib_dir.read_dir().unwrap().flat_map(|e| e.ok()) {
+            let path = entry.path();
+            if path.is_file() {
+                let file_name = path.file_name().unwrap().to_str().unwrap();
+                println!(
+                    "cargo:rerun-if-changed={}",
+                    Path::new(&ort_lib_out_dir).join(file_name).display()
+                );
+            }
+        }
     }
 
     println!("Include directory: {:?}", include_dir);
